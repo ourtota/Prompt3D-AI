@@ -53,10 +53,9 @@ main{max-width:760px;margin:0 auto;padding:16px 14px 110px}
 
 /* ===== Controls ===== */
 .controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
-.controls select{flex:1 1 170px;padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;font-size:15px}
-.searchBox{flex:1 1 100%;display:flex;align-items:center;background:#fff;border:2px solid var(--line);border-radius:12px;padding:0 12px}
-.searchBox input{border:none;flex:1;padding:11px 6px;font-size:15px;background:transparent}
-.searchBox input:focus{outline:none}
+.datePick{flex:1 1 100%}
+.datePick label{display:block;font-size:15.5px;font-weight:800;color:#C4501B;margin:2px 2px 6px}
+.datePick select{width:100%;padding:13px 14px;border-radius:14px;border:2.5px solid #E86A33;background:#FFF3E2;color:#4A2C14;font-size:17.5px;font-weight:800;box-shadow:0 3px 10px rgba(232,106,51,.18)}
 .statsRow{display:flex;gap:8px;margin:12px 0 4px;flex-wrap:wrap}
 .stat{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:8px 12px;font-size:13px;color:var(--muted)}
 .stat b{color:var(--ink);font-size:15px}
@@ -178,8 +177,10 @@ footer.note{text-align:center;color:var(--muted);font-size:12px;padding:6px 20px
     <!-- HOME VIEW -->
     <section id="view-home">
       <div class="controls">
-        <div class="searchBox">🔎<input id="inSearch" type="search" placeholder="Cari ide… cth: sarapan, hujan, ayah pulang"></div>
-        <select id="selDate" aria-label="Pilih tanggal materi"></select>
+        <div class="datePick">
+          <label for="selDate">📅 Pilih tanggal materi</label>
+          <select id="selDate" aria-label="Pilih tanggal materi"></select>
+        </div>
       </div>
       <div class="statsRow" id="statsRow"></div>
       <h2 class="dayTitle" id="dayTitle"></h2>
@@ -482,7 +483,7 @@ function renderHome(){
   if(day.pdf) $("#dayMeta").innerHTML += ` • <a href="${esc(day.pdf)}" target="_blank" rel="noopener">📄 PDF hari ini</a>`;
   const items = day.ideas.map((idea,idx)=>({idea,idx})).filter(({idea})=>ideaMatches(idea,state.query));
   list.innerHTML = items.length ? items.map(({idea,idx})=>ideaCard(state.date,idx,idea)).join("")
-    : `<div class="emptyBox">Tidak ada ide yang cocok dengan pencarianmu di tanggal ini.<br>Coba kata kunci lain, atau ganti tanggal.</div>`;
+    : `<div class="emptyBox">Belum ada ide di tanggal ini.<br>Coba ganti tanggal di pilihan tanggal materi di atas.</div>`;
   bindCards(list);
 }
 function renderFav(){
@@ -591,7 +592,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   $("#btnBuyBanner").addEventListener("click", openBuy);
   $("#btnBuyClose").addEventListener("click", closeBuy);
   $("#buyModal").addEventListener("click", e=>{ if(e.target.id==="buyModal") closeBuy(); });
-  $("#inSearch").addEventListener("input", e=>{ state.query=e.target.value; renderHome(); });
   document.querySelectorAll("nav.bottom button").forEach(b=> b.addEventListener("click",()=> switchView(b.dataset.nav)));
   $("#btnBack").addEventListener("click", closeDetail);
   $("#btnLogout").addEventListener("click", logout);
