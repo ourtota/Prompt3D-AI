@@ -120,6 +120,9 @@ nav.bottom button.on{color:var(--brand)}
 .modalCard ul{margin:0 0 12px;padding-left:19px}
 .modalCard li{font-size:14px;margin-bottom:5px}
 .payNote{background:#F2F8F0;border:1.5px solid #CBE5C4;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin-bottom:12px}
+.priceTag{font-size:25px;font-weight:800;color:var(--brand-d);margin:2px 0 10px}
+.priceTag span{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.pdfBtn{display:block;text-align:center;background:#FFF3E2;border:1.5px solid var(--brand);color:var(--brand-d);font-weight:700;border-radius:12px;padding:10px;margin:0 0 12px;text-decoration:none;font-size:14.5px}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom));background:#33241C;color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;font-weight:600;z-index:99;opacity:0;pointer-events:none;transition:opacity .25s;box-shadow:0 8px 22px rgba(0,0,0,.25)}
 #toast.show{opacity:1}
 footer.note{text-align:center;color:var(--muted);font-size:12px;padding:6px 20px 0}
@@ -151,7 +154,7 @@ footer.note{text-align:center;color:var(--muted);font-size:12px;padding:6px 20px
     <button class="btn btnBrand" id="btnEnter">Masuk Aplikasi →</button>
     <button class="btn btnDemo" id="btnDemo">🧪 Coba Dulu dengan Mode Contoh</button>
     <button class="btn btnBuy" id="btnBuyLogin">🛒 Beli Kode Akses</button>
-    <div class="actNote">Belum punya kode akses? Kuota terbatas hanya untuk <b>30 pengguna terdaftar</b>. Ketuk tombol Beli Kode Akses di atas — pembayaran mudah via <b>transfer bank</b>.</div>
+    <div class="actNote">Belum punya kode akses? Kuota terbatas hanya untuk <b>30 pengguna terdaftar</b>. Harga <b>Rp 50.000</b> — sekali bayar, berlaku selamanya, pembayaran mudah via <b>transfer bank</b>.</div>
   </div>
 </div>
 
@@ -258,6 +261,7 @@ footer.note{text-align:center;color:var(--muted);font-size:12px;padding:6px 20px
 <div id="buyModal" class="modalWrap hidden">
   <div class="modalCard">
     <h3>🔓 Buka Semua Materi Prompt3D-AI!</h3>
+    <div class="priceTag">Rp 50.000<span>sekali bayar • berlaku selamanya • tanpa biaya bulanan</span></div>
     <p>Di Mode Contoh kamu hanya bisa membuka materi <b>1 November 2026</b>. Dengan kode akses, semua tanggal terbuka — termasuk materi baru yang terbit <b>setiap hari jam 06.00</b>.</p>
     <ul>
       <li>✅ Semua ide prompt terbuka (sudah 98 ide &amp; bertambah 7 setiap hari)</li>
@@ -265,7 +269,8 @@ footer.note{text-align:center;color:var(--muted);font-size:12px;padding:6px 20px
       <li>✅ Caption &amp; hashtag siap posting</li>
       <li>✅ 1 kode akses khusus untukmu (kuota hanya 30 pengguna)</li>
     </ul>
-    <div class="payNote">💳 <b>Pembayaran via transfer bank.</b> Ketuk tombol di bawah untuk memesan — admin akan mengirimkan harga, nomor rekening tujuan transfer, dan kode aksesmu setelah pembayaran terkonfirmasi.</div>
+    <a class="btn btnGhost" id="btnFreePdf" href="#" target="_blank" rel="noopener" style="text-align:center;text-decoration:none;display:none;margin-bottom:9px">🎁 Unduh PDF Contoh GRATIS (1 Nov 2026)</a>
+    <div class="payNote">💳 <b>Pembayaran via transfer bank.</b> Ketuk tombol di bawah untuk memesan — admin akan mengirimkan nomor rekening tujuan transfer, dan kode aksesmu dikirim setelah pembayaran terkonfirmasi.</div>
     <a class="btn btnBrand" id="btnPayLink" href="#" target="_blank" rel="noopener" style="text-align:center;text-decoration:none;display:none;margin-bottom:9px">💳 Bayar via Transfer Bank</a>
     <a class="btn btnBuy" id="btnBuyWA" href="#" target="_blank" rel="noopener" style="text-align:center;text-decoration:none;display:block;margin-top:0">💬 Pesan Kode via WhatsApp Admin</a>
     <button class="btn btnGhost" id="btnBuyClose" style="width:100%;margin-top:9px">Nanti Dulu</button>
@@ -283,8 +288,11 @@ const PAYMENT_URL = ""; // tautkan ke page pembayaran transfer bank bila sudah t
 const WA_ADMIN = "6281398020968"; // Admin ID (nomor publik admin)
 function isLocked(date){ return state.demo && date !== DEMO_DATE; }
 function openBuy(){
-  const waText = encodeURIComponent("Halo Admin Prompt3D-AI, saya mau membeli kode akses Prompt3D-AI (pembayaran via transfer bank). Mohon info harga dan nomor rekeningnya. Terima kasih.");
+  const waText = encodeURIComponent("Halo Admin Prompt3D-AI, saya mau membeli kode akses Prompt3D-AI seharga Rp 50.000 (sekali bayar, berlaku selamanya), pembayaran via transfer bank. Mohon info nomor rekeningnya. Terima kasih.");
   $("#btnBuyWA").href = "https://wa.me/" + WA_ADMIN + "?text=" + waText;
+  const freeDay = DATA.days.find(d=>d.date===DEMO_DATE);
+  const freeBtn = $("#btnFreePdf");
+  if(freeDay && freeDay.pdf){ freeBtn.href = freeDay.pdf; freeBtn.style.display = "block"; } else { freeBtn.style.display = "none"; }
   const pay = $("#btnPayLink");
   if(PAYMENT_URL){ pay.href = PAYMENT_URL; pay.style.display = "block"; } else { pay.style.display = "none"; }
   $("#buyModal").classList.remove("hidden");
@@ -411,6 +419,7 @@ function renderHome(){
   $("#dayMeta").textContent = state.demo
     ? "🧪 Mode Contoh: tanggal ini terbuka penuh. Tanggal lain terkunci 🔒 — beli kode akses untuk membuka semuanya."
     : "7 ide baru setiap hari • ketuk ⭐ untuk menyimpan favorit";
+  if(day.pdf) $("#dayMeta").innerHTML += ` • <a href="${esc(day.pdf)}" target="_blank" rel="noopener">📄 PDF hari ini</a>`;
   const items = day.ideas.map((idea,idx)=>({idea,idx})).filter(({idea})=>ideaMatches(idea,state.query));
   list.innerHTML = items.length ? items.map(({idea,idx})=>ideaCard(state.date,idx,idea)).join("")
     : `<div class="emptyBox">Tidak ada ide yang cocok dengan pencarianmu di tanggal ini.<br>Coba kata kunci lain, atau ganti tanggal.</div>`;
@@ -451,13 +460,14 @@ function sec(title, body, copyLabel, copyTextVal, alt){
     ${copyTextVal?`<button class="copyBtn ${alt?"alt":""}" data-copy="${esc(copyTextVal)}">${copyLabel}</button>`:""}</div>`;
 }
 function openDetail(k){
-  const {idea, date, idx} = findIdea(k);
+  const {idea, date, idx, day} = findIdea(k);
   if(isLocked(date)){ openBuy(); return; }
   const used=getSet(LS.used);
   $("#detailTitle").textContent = idea.title;
   let h = "";
   if(idea.hook) h += `<div class="sec"><h4>🎯 Hook</h4><p>${esc(idea.hook)}</p></div>`;
   h += `<div class="sec"><h4>ℹ️ Info</h4><p>📅 ${fmtDate(date)} • ⏱ ${esc(idea.durasi||"20–30 detik")}${idea.mood?" • 🎭 "+esc(idea.mood):""} • 📱 Vertikal 9:16 • 🎨 Pixar-style 3D</p></div>`;
+  if(day && day.pdf) h += `<a class="pdfBtn" href="${esc(day.pdf)}" target="_blank" rel="noopener">📄 Buka PDF Lengkap Hari Ini</a>`;
   if(idea.konsep) h += `<div class="sec"><h4>🎨 Konsep Visual 3D</h4><p>${esc(idea.konsep)}</p></div>`;
   if(idea.alur) h += `<div class="sec"><h4>🎬 Alur Cerita per Detik</h4><p class="alurLine">${esc(idea.alur)}</p></div>`;
   h += sec("🪄 Prompt Utama (English)", idea.prompt, "📋 Salin Prompt Utama", idea.prompt);
