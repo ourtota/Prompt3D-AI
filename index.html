@@ -232,7 +232,8 @@ footer.note{text-align:center;color:var(--muted);font-size:12px;padding:6px 20px
       <p class="dayMeta">Pengaturan di HP ini.</p>
       <div class="guideCard">
         <p style="margin:0 0 4px">Nama: <b id="profName">-</b></p>
-        <p style="margin:0 0 14px">Status: <b id="profStatus">-</b></p>
+        <p style="margin:0 0 4px">Status: <b id="profStatus">-</b></p>
+        <p style="margin:0 0 14px">Slot: <b id="profSlot">-</b> • Device ini terdaftar ✓<br><span style="font-size:12.5px;color:var(--muted)">1 kode akses hanya berlaku untuk 1 device. Ganti HP? Hubungi admin untuk reset device.</span></p>
         <button class="btn btnGhost" id="btnEditName" style="width:100%;margin-bottom:9px">✏️ Ganti Nama</button>
         <button class="btn btnGhost" id="btnLogout" style="width:100%;color:var(--danger)">🚪 Keluar / Ganti Kode Akses</button>
       </div>
@@ -284,7 +285,25 @@ footer.note{text-align:center;color:var(--muted);font-size:12px;padding:6px 20px
 <script>
 "use strict";
 const CODE_HASHES = ["5fee3f098f3239014536a43ff2050669d8b9341af45fcf753c7eb44d9d57f276", "bec07d41e4f01b841aa3d465f22a463891db3bc196e326c51b14c43d3468155e", "2d2f33a06ed3359556fe1cda2bdb2346c1ffd7f75d8d9338709555b404c7b8f3", "ef7620d8f3e633c5ca8d0dfddd8e3dc3f86444911731294bd5bb6c8fbf31d89f", "a4528239359f14245951775811106d90738a13ae35eefba9495bcfbb95f189e6", "2c2e3049ffffe5ce08add5eaf8784c033781dc04b2aefea861a257227b453723", "a5693eef78479f5ff59a74585ab1afa118f88e02af40776c5ac3d294b78f702c", "c623493c763bf30b8a076425f36cb761ba1d7652ecfb5bae7ede57cde9172b26", "64c7c3103daf7e4881629126cd9aa5f138080dcd30685b59a15d2c5367a94c69", "60f97e97db0943e621cd6e10ecbbe9b59647fd3682c5af1dc25be2227bef108f", "77bdafe8fc7567e94130db5e2490b907619817d39918f97ee5ef06096ea6a9c4", "1da51368804a8467372e8286fd0fab0f019276a26f11da7cba92e19ad23fd7a6", "1b1975a33cbad5132975558fabde5b1498cb173f510529e897a7248431b8d921", "bd879ecaa0f5e9fc3a9915501053443e723c69796cdecd43a6415bf4e3499712", "666ba60496b903770a3a562d73d66778169e2b5e41a98ced64a0081d84e69c32", "516f8e5d937868fa13bbee1f5aa912b3073c1b9e1a4d8afe6a2b2c109ed427ba", "288786d96a3d76493cfbf04b63619597a435a867d40fe42f0d5715df2ed5fd83", "fcb686c0f4c68b006bfe29880de79ad10cbb4dd8dce90fe2857bc25bc69684ca", "137ae813bf99b9a2cc0c1c8a6913f657c40f47dbeb898a53cbd56c48b59b3e7b", "98fc2b58efeaaf7dda9accc04b51fb06840ed0e2b04142c14306198c9acbdcbf", "f9f6554d4038f94e5deaefdb50b4abe83d323d6076b78d4602730122a0d804c4", "7740972695ff8e7275892c51f6bba1b96e69243600fd3451e6c0c0df9555712a", "9dd1d125e2c54bef4241ed351df9e7472b605ff8686ebe68dd644313f1003ca2", "51c962a83c8013c9e4222c296ddb1e13c0e2f78a29044c1cf5bdaee0cedca145", "78c15f1403a02cbe4ca9c8e6af507e557f57c87674660bfaa343aebe41ff3ff2", "48998eb7bc6d71acbd280360b7fddf35cf7d8370d60868232ec45b18a4c8c888", "dc2c91aa421ac96237c3685e0793fdcf59357811306116aa87fc20a9b1e14ef5", "54725a2426afdc18b0ef014925fe37841ea2c56374490153601d1fdee9679130", "11dc942bb9787b55da8553b0a7bc54f1a121b8d9d96f493517a58b482c73ca7c", "9b1f2b06e21484d3ac97dbdbfa276e067d63b1fa569a6386c87d463d5bad6105"];
-const LS = { name:"p3d_name", hash:"p3d_hash", demo:"p3d_demo", favs:"p3d_favs", used:"p3d_used", cache:"p3d_cache" };
+const LS = { name:"p3d_name", hash:"p3d_hash", demo:"p3d_demo", favs:"p3d_favs", used:"p3d_used", cache:"p3d_cache", device:"p3d_device", code:"p3d_code", slot:"p3d_slot" };
+const API_URL = "https://script.google.com/macros/s/AKfycbyNSsfTaUJL0y6P9DobkomZrB1HBx-TGlKSEIRshQf41BRCWUWHCEYOcb9h6eSYEkOk/exec"; // Web App "Prompt3D-AI Device Server" (Apps Script, Execute as Me, Anyone)
+function getDeviceId(){
+  let id = localStorage.getItem(LS.device);
+  if(!id){
+    id = (crypto.randomUUID ? crypto.randomUUID() : "dev-"+Date.now()+"-"+Math.random().toString(36).slice(2,10));
+    localStorage.setItem(LS.device, id);
+  }
+  return id;
+}
+async function apiCall(params){
+  const url = API_URL + "?" + new URLSearchParams(params).toString();
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=> ctrl.abort(), 15000);
+  try{
+    const r = await fetch(url, { signal: ctrl.signal });
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
 const DEMO_DATE = "2026-11-01"; // satu-satunya tanggal yang terbuka di Mode Contoh
 const PAYMENT_URL = ""; // tautkan ke page pembayaran transfer bank bila sudah tersedia; kosong = pesan via WA admin
 const WA_ADMIN = "6281398020968"; // Admin ID (nomor publik admin)
@@ -331,10 +350,45 @@ async function tryEnter(){
     err.textContent="Kode akses tidak dikenal. Cek lagi ejaannya (format: P3D-XXXXXX), atau hubungi admin.";
     err.classList.remove("hidden"); return;
   }
+  if(API_URL){
+    const btn = $("#btnEnter");
+    btn.disabled = true; btn.textContent = "Memeriksa ke server…";
+    let res = null;
+    try{ res = await apiCall({ action:"activate", code, name, device:getDeviceId() }); }
+    catch(e){ res = null; }
+    btn.disabled = false; btn.textContent = "Masuk Aplikasi →";
+    if(!res){
+      err.textContent="Tidak bisa menghubungi server. Cek koneksi internetmu, lalu coba lagi.";
+      err.classList.remove("hidden"); return;
+    }
+    if(!res.ok){
+      if(res.error === "device_limit"){
+        err.textContent="Kode ini sudah dipakai di device lain. Ingat: 1 kode akses hanya untuk 1 device. Kalau kamu baru ganti HP, hubungi admin untuk reset device.";
+      } else {
+        err.textContent="Kode akses tidak dikenal di server. Cek lagi ejaannya, atau hubungi admin.";
+      }
+      err.classList.remove("hidden"); return;
+    }
+    if(res.slot) localStorage.setItem(LS.slot, res.slot);
+  }
   localStorage.setItem(LS.name, name);
   localStorage.setItem(LS.hash, h);
+  localStorage.setItem(LS.code, code);
   localStorage.removeItem(LS.demo);
   enterApp(false);
+}
+async function revalidate(){
+  // Cek ulang diam-diam: bila admin me-reset device ini, sesi dikunci lagi.
+  if(!API_URL || state.demo) return;
+  const code = localStorage.getItem(LS.code);
+  if(!code) return;
+  let res = null;
+  try{ res = await apiCall({ action:"check", code, device:getDeviceId() }); }catch(e){ return; }
+  if(res && !res.ok){
+    localStorage.removeItem(LS.hash); localStorage.removeItem(LS.code); localStorage.removeItem(LS.slot);
+    alert("Akses di device ini sudah di-reset oleh admin. Silakan aktivasi lagi, atau hubungi admin bila kamu ganti HP.");
+    location.reload();
+  }
 }
 function enterDemo(){
   localStorage.setItem(LS.demo,"1");
@@ -349,11 +403,15 @@ function enterApp(demo){
   $("#demoBanner").classList.toggle("hidden", !state.demo);
   $("#profName").textContent = localStorage.getItem(LS.name)||"-";
   $("#profStatus").textContent = state.demo ? "Mode Contoh" : "Pengguna terdaftar ✓";
+  const slotEl = $("#profSlot");
+  if(slotEl) slotEl.textContent = state.demo ? "-" : (localStorage.getItem(LS.slot) || "-");
   buildDateOptions();
   renderHome();
+  if(!state.demo) revalidate();
 }
 function logout(){
   localStorage.removeItem(LS.hash); localStorage.removeItem(LS.demo);
+  localStorage.removeItem(LS.code); localStorage.removeItem(LS.slot);
   location.reload();
 }
 
